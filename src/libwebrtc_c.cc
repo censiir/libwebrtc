@@ -412,6 +412,21 @@ lwrtc_peer_t* lwrtc_factory_create_peer(
   if (config) {
     rtc_config.offer_to_receive_audio = config->offer_to_receive_audio != 0;
     rtc_config.offer_to_receive_video = config->offer_to_receive_video != 0;
+
+    int n = config->ice_server_count;
+    if (n > static_cast<int>(libwebrtc::kMaxIceServerSize))
+      n = static_cast<int>(libwebrtc::kMaxIceServerSize);
+    for (int i = 0; i < n; i++) {
+      const lwrtc_ice_server_t& src = config->ice_servers[i];
+      libwebrtc::IceServer srv;
+      for (int j = 0; j < LWRTC_MAX_ICE_URLS; j++) {
+        if (src.urls[j] && src.urls[j][0]) { srv.uri = src.urls[j]; break; }
+      }
+      if (srv.uri.empty()) continue;
+      if (src.username && src.username[0])   srv.username = src.username;
+      if (src.credential && src.credential[0]) srv.password = src.credential;
+      rtc_config.ice_servers[i] = srv;
+    }
   }
 
   libwebrtc::scoped_refptr<libwebrtc::RTCMediaConstraints> constraints_ref =
