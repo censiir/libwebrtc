@@ -27,9 +27,20 @@ typedef enum lwrtc_video_codec {
   LWRTC_VIDEO_CODEC_AV1 = 2,
 } lwrtc_video_codec_t;
 
+#define LWRTC_MAX_ICE_SERVERS 8
+#define LWRTC_MAX_ICE_URLS    4
+
+typedef struct lwrtc_ice_server {
+  const char* urls[LWRTC_MAX_ICE_URLS];  // null-terminated list of URLs; unused slots must be NULL
+  const char* username;                   // may be NULL
+  const char* credential;                 // may be NULL
+} lwrtc_ice_server_t;
+
 typedef struct lwrtc_config {
   int offer_to_receive_audio;
   int offer_to_receive_video;
+  lwrtc_ice_server_t ice_servers[LWRTC_MAX_ICE_SERVERS];
+  int ice_server_count;  // number of valid entries in ice_servers (0 = no STUN/TURN)
 } lwrtc_config_t;
 
 typedef void (*lwrtc_ice_cb)(
